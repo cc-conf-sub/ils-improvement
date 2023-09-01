@@ -21,7 +21,7 @@ Hard coded parameters:
 RunPivotLS.java
 * Input: positive edge list
 * Methods: "neighborhood oracle" for Pivot algorithm; also
-  * ILS,
+  * ILS (sequential and parallel),
   * "timed" LS (same amount of time as ILS),
   * match LS (matches improvement level of ILS),
   * full LS

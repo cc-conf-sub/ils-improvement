@@ -494,7 +494,35 @@ public class Helper {
 
     }
     
+    public static long pivot_outer_cost(ArrayList<ArrayList<Integer>> clustering, ArrayList<ArrayList<Integer>> prob_matrix) {
+        /*
+           Quick edit distance for large 0/1 graphs
+        */
 
+        long dist = 0;
+        long total_pos = 0;
+        HashMap<Integer, Integer> cluster_map = get_clustering_map(clustering);
+
+        // loop over nodes in prob_graph
+        for (int i = 0; i < prob_matrix.size(); i++) {
+            int cur_label = cluster_map.get(i);
+            ArrayList<Integer> neighbors = prob_matrix.get(i);
+
+            for (int j = 0; j < neighbors.size(); j++) {
+                int cur_node = neighbors.get(j);
+                if (i < cur_node) {
+                    if (cluster_map.get(cur_node) == cur_label) {
+                        dist++;
+                    } 
+                    total_pos++;
+                }
+            }
+        }
+
+        long cost_outside = total_pos - dist;
+        return cost_outside; 
+
+    }
 
     // --- OLD CODE --- 
 

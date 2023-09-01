@@ -24,35 +24,39 @@ public class RunPivotLS {
 
         double pKwikTimeTotal = 0;
         double hybridTimeTotal = 0;
-	double hybrid2TimeTotal = 0;
+	    double hybrid2TimeTotal = 0;
         double localTimeTotal = 0;
         double randTimeTotal = 0;
+        double parallelTimeTotal = 0; 
 
         double[] pKwikTimes = new double[ROUNDS];
         double[] hybridTimes = new double[ROUNDS];
         double[] hybrid2Times = new double[ROUNDS];
         double[] localTimes = new double[ROUNDS];
         double[] randTimes = new double[ROUNDS];
+        double[] parallelTimes = new double[ROUNDS];
   
         long pKwikNumClusters = 0;
         long hybridNumClusters = 0;
-	long hybrid2NumClusters = 0;
+	    long hybrid2NumClusters = 0;
         long localNumClusters = 0;
         long randNumClusters = 0;
 
         long largestPKwikCluster = 0;
         long largestHybridCluster = 0;
-	long largestHybrid2Cluster = 0;
+	    long largestHybrid2Cluster = 0;
         long largestLocalCluster = 0;
         long largestRandCluster = 0;
 
 	long pKwikScores = 0;
+    long outerScores = 0;
 	long hybridScores = 0;
 	long hybrid2Scores = 0;
 	long localScores = 0;
 	long randScores = 0;
 
         long[] pKwikScoresList = new long[ROUNDS];
+        long[] outerScoresList = new long[ROUNDS];
         long[] hybridScoresList = new long[ROUNDS];
         long[] hybrid2ScoresList = new long[ROUNDS];
         long[] localScoresList = new long[ROUNDS];
@@ -120,6 +124,13 @@ public class RunPivotLS {
         localTimes[j] = localTime / 1000.0;
         // System.out.println("LS finished in: " + localTime / 1000.0 + " s");
 
+        result_copy = makeCopy(result);
+        long parallelStart = System.currentTimeMillis();
+        ArrayList<ArrayList<Integer>> parallel_result = Hybrid.large_graph_fix_clusters_parallel(result_copy, prob_matrix, false);
+        long parallelTime = System.currentTimeMillis() - parallelStart;
+        parallelTimeTotal += (parallelTime / 1000.0);
+        parallelTimes[j] = parallelTime / 1000.0;
+
         // System.out.println();
         pKwikNumClusters += result.size();
         // System.out.println("Num pKwik Clusters: " + result.size());
@@ -178,7 +189,10 @@ public class RunPivotLS {
         pKwikScores += p_score;
         pKwikScoresList[j] = p_score;
 	// System.out.println("PKwik Score: " + p_score);
-	
+
+        long outer_score = Helper.pivot_outer_cost(result, prob_matrix);
+        outerScores += outer_score;
+        outerScoresList[j] = outer_score;	
         
         hybridStart = System.currentTimeMillis();
         // int h_score = Helper.large_graph_prob_edit_dist_hash(fix, prob_matrix);
@@ -234,9 +248,19 @@ public class RunPivotLS {
             System.out.print(pKwikScoresList[i] + " ");
         System.out.println();
         System.out.println();
+        System.out.println("outer scores: ");
+        for (int i = 0; i < ROUNDS; i++)
+            System.out.print(outerScoresList[i] + " ");
+        System.out.println();
+        System.out.println();
         System.out.println("ils times: ");
         for (int i = 0; i < ROUNDS; i++)
             System.out.print(hybridTimes[i] + " ");
+        System.out.println();
+        System.out.println();
+        System.out.println("parallel times: ");
+        for (int i = 0; i < ROUNDS; i++)
+            System.out.print(parallelTimes[i] + " ");
         System.out.println();
         System.out.println();
         System.out.println("ils scores: ");
@@ -276,13 +300,16 @@ public class RunPivotLS {
         System.out.println();
         System.out.println("Average pivot time: " + pKwikTimeTotal / ((double) ROUNDS));
         System.out.println("Average ils time: " + hybridTimeTotal / ((double) ROUNDS));
-	System.out.println("Average timed ls time: " + hybrid2TimeTotal / ((double) ROUNDS));
+        System.out.println("Average parallel time: " + parallelTimeTotal / ((double) ROUNDS));
+	    System.out.println("Average timed ls time: " + hybrid2TimeTotal / ((double) ROUNDS));
         System.out.println("Average local time: " + localTimeTotal / ((double) ROUNDS));
         System.out.println("Average match time: " + randTimeTotal / ((double) ROUNDS));
         System.out.println();
 
 
 	    System.out.println("Average pivot score: " + pKwikScores / ((double) ROUNDS));
+        System.out.println("Average outer score: " + outerScores / ((double) ROUNDS));
+
 	    System.out.println("Average ils score: " + hybridScores / ((double) ROUNDS));
         System.out.println("Percent Improvement: " + (pKwikScores - hybridScores) / ((double) pKwikScores) * 100.0);
 	System.out.println("Average timed ls score: " + hybrid2Scores / ((double) ROUNDS));
@@ -319,12 +346,12 @@ public class RunPivotLS {
         System.out.println();
         System.out.println();
         
-        System.out.println("hybrid precision: ");
+        System.out.println("ils precision: ");
         for (int i = 0; i < ROUNDS; i++)
             System.out.print(hPrecisionList[i] + " ");
         System.out.println();
         System.out.println();
-        System.out.println("hybrid recall: ");
+        System.out.println("ils recall: ");
         for (int i = 0; i < ROUNDS; i++)
             System.out.print(hRecallList[i] + " ");
         System.out.println();
